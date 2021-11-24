@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon256.png" sizes="256x256">
+    <title>Tiny Lights</title>
+    <link href="mui.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="style.css">
+    <script src="mui.min.js"></script>
+
+    <script>
+        var groupModes = [];
+        var toggleEls = [];
+        var ledEls = [];
+        var ledOns = [];
+
+        function err() {
+            document.querySelector('body').classList.add('disconnected');
+        }
+
+        function toggleGroup(id) {
+            state = groupModes[id] == "auto" ? "manual" : "auto";
+            console.log("Set group", id, "to", state);
+            fetch('/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, mode: state })
+            })
+                .then(response => response.json())
+                .then(data => readState(data))
+                .catch(err);
+        }
+
+        function toggleLED(id) {
+            state = !ledOns[id];
+            console.log("Set", id, "to", state);
+            fetch('/light', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, state: state })
+            })
+                .then(response => response.json())
+                .then(data => readState(data))
+                .catch(err);
+        }
+
+        function readState(data) {
+            for (const group of data.groups) {
+                groupModes[group.id] = group.mode;
+                let active = group.mode == "manual";
+                if (active) {
+                    toggleEls[group.id].classList.add("mui-btn--accent");
+                }
+                else {
+                    toggleEls[group.id].classList.remove("mui-btn--accent");
+                }
+
+                for (const led of group.leds) {
+                    ledEls[led.id].disabled = !active;
+                    ledOns[led.id] = led.on;
+                    if (led.on) {
+                        ledEls[led.id].classList.add("mui-btn--accent");
+                    }
+                    else {
+                        ledEls[led.id].classList.remove("mui-btn--accent");
+                    }
+                }
+            }
+            document.querySelector('body').classList.remove('disconnected');
+        }
+
+        function buildUI(data) {
+            const ledsEl = document.querySelector("#leds");
+            for (const group of data.groups) {
+                let groupEl = document.createElement("div");
+                groupEl.className = "mui-panel";
+
+                let toggleEl = document.createElement("button");
+                toggleEl.className = "mui-btn mui-btn--fab mui-btn--accent toggle";
+                toggleEl.innerHTML = "💡";
+                toggleEl.onclick = ev => toggleGroup(group.id);
+                groupEl.appendChild(toggleEl);
+                toggleEls[group.id] = toggleEl;
+
+                let titleEl = document.createElement("div");
+                titleEl.className = "mui--text-subhead";
+                titleEl.innerHTML = group.name;
+                groupEl.appendChild(titleEl);
+
+                for (const led of group.leds) {
+                    let ledEl = document.createElement("button");
+                    ledEl.className = "mui-btn mui-btn--raised";
+                    ledEl.innerHTML = led.name;
+
+                    ledEls[led.id] = ledEl;
+                    ledEl.onclick = ev => toggleLED(led.id);
+                    groupEl.appendChild(ledEl);
+                }
+                ledsEl.appendChild(groupEl);
+            }
+
+            readState(data);
+        }
+
+        function fetchState() {
+            window.fetch("/state.json")
+                .then(response => response.json())
+                .then(data => readState(data))
+                .catch(err);
+        }
+
+        window.onload = event => {
+            window.fetch("/state.json")
+                .then(response => response.json())
+                .then(data => buildUI(data))
+                .catch(err);
+            setInterval(fetchState, 3000);
+
+            document.querySelector("#auto").addEventListener('click', ev => {
+                groupModes.forEach(function (mode, id) {
+                    if (mode != "auto") {
+                        toggleGroup(id);
+                    }
+                });
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <header class="mui-appbar mui--z1">
+        <div class="mui-container">
+            <table>
+                <tr class="mui--appbar-height">
+                    <td class="mui--text-title"><a href="/">Tiny lighting control</a></td>
+                    <td class="mui--text-right">
+                        <ul class="mui-list--inline mui--text-body2">
+                            <li id="auto"><a href="#">Auto</a></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </header>
+    <div id="content-wrapper" class="mui--text-center">
+        <div class="mui--appbar-height"></div>
+        <br>
+        <br>
+        <div class="connected">
+            <div id="leds" class="mui-col-sm-10 mui-col-sm-offset-1">
+            </div>
+        </div>
+        <div class="disconnected">
+            <div class="mui--text-subhead">Not connected</div>
+            <br>
+            I can't connect to the Tiny Lights!<br>Maybe try turning it on. Or off and on again, if it's already on.
+        </div>
+    </div>
+    <footer>
+        <div class="mui-container mui--text-center">
+            💡 Made by Jim 💡
+        </div>
+        <div class="mui-container mui--text-right">
+            <a href="/spec.html" class="mui--text-dark-hint">Edit spec</a>
+        </div>
+        <br>
+    </footer>
+</body>
+
+</html>

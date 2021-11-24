@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon256.png" sizes="256x256">
+    <title>Tiny Lights - Spec Editor</title>
+    <link href="mui.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="style.css">
+    <script src="mui.min.js"></script>
+
+    <script>
+        window.onload = event => {
+            document.querySelector("errors").innerHTML = "";
+            window.fetch("spec.json")
+                .then(response => response.text())
+                .then(spec => document.querySelector("#spec").value = spec)
+                .catch(ev => document.querySelector("errors").innerHTML = "Connection error");
+
+            document.querySelector("#upload").addEventListener('click', ev => {
+                window.fetch("spec.json", {
+                    method: "POST",
+                    body: document.querySelector("#spec").value,
+                });
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <header class="mui-appbar mui--z1">
+        <div class="mui-container">
+            <table>
+                <tr class="mui--appbar-height">
+                    <td class="mui--text-title"><a href="/">Tiny lighting control</a></td>
+                </tr>
+            </table>
+        </div>
+    </header>
+    <div>
+        <div class="mui-container">
+            <div class="mui--appbar-height"></div>
+            <br>
+            <br>
+            <form class="mui-form">
+                <legend>Submit new spec</legend>
+                <div class="mui-textfield">
+                    <textarea id="spec"></textarea>
+                    <label>JSON</label>
+                </div>
+                <button id="upload" type="button" class="mui-btn mui-btn--raised">Upload</button>
+                <div id="errors" class="mui--text-danger"></div>
+            </form>
+        </div>
+    </div>
+    <footer>
+        <div class="mui-container mui--text-center">
+            💡 Made by Jim 💡
+        </div>
+        <br>
+    </footer>
+</body>
+
+</html>

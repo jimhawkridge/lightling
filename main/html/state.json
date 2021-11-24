@@ -1,0 +1,38 @@
+{
+    "groups": [
+        {
+            "id": 1,
+            "name": "Bookshop",
+            "mode": "manual",
+            "leds": [
+                {
+                    "id": 0,
+                    "name": "Upstairs",
+                    "on": false
+                },
+                {
+                    "id": 1,
+                    "name": "Downstairs",
+                    "on": true
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Townhouse",
+            "mode": "auto",
+            "leds": [
+                {
+                    "id": 2,
+                    "name": "Upstairs",
+                    "on": false
+                },
+                {
+                    "id": 3,
+                    "name": "Downstairs",
+                    "on": true
+                }
+            ]
+        }
+    ]
+}
