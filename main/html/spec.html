@@ -14,7 +14,8 @@
 
     <script>
         window.onload = event => {
-            document.querySelector("errors").innerHTML = "";
+            const errorsEl = document.querySelector("#errors");
+            errorsEl.innerHTML = "";
             window.fetch("spec.json")
                 .then(response => response.text())
                 .then(spec => document.querySelector("#spec").value = spec)
@@ -24,7 +25,9 @@
                 window.fetch("spec.json", {
                     method: "POST",
                     body: document.querySelector("#spec").value,
-                });
+                }).then(response => response.json())
+                    .then(data => errorsEl.innerHTML = data.error)
+                    .catch(ev => errorsEl.innerHTML = "Connection error");;
             });
         }
     </script>
@@ -51,8 +54,8 @@
                     <textarea id="spec"></textarea>
                     <label>JSON</label>
                 </div>
-                <button id="upload" type="button" class="mui-btn mui-btn--raised">Upload</button>
                 <div id="errors" class="mui--text-danger"></div>
+                <button id="upload" type="button" class="mui-btn mui-btn--raised">Upload</button>
             </form>
         </div>
     </div>

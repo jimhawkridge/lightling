@@ -35,19 +35,20 @@ static esp_err_t spec_page_get_handler(httpd_req_t *req)
 }
 
 static const httpd_uri_t spec_page = {
-    .uri = "/",
+    .uri = "/spec.html",
     .method = HTTP_GET,
     .handler = spec_page_get_handler};
 
 static esp_err_t style_get_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET style");
+    httpd_resp_set_type(req, "text/css");
     httpd_resp_send(req, style_css, strlen(style_css));
     return ESP_OK;
 }
 
 static const httpd_uri_t style_css_get = {
-    .uri = "/",
+    .uri = "/style.css",
     .method = HTTP_GET,
     .handler = style_get_handler};
 
@@ -293,7 +294,8 @@ esp_err_t http_404_error_handler(httpd_req_t *req, httpd_err_code_t err)
 static esp_err_t spec_get_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET spec");
-    char *string = "{}"; //get_state();
+    char *string = "{}";
+    httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, string, strlen(string));
     // free(string);
     return ESP_OK;
@@ -313,10 +315,11 @@ static esp_err_t spec_post_handler(httpd_req_t *req)
         ESP_LOGE(TAG, "POST body is too long");
         return ESP_FAIL;
     }
-    char *buf = malloc(req->content_len) + 1;
+    char *buf = malloc(req->content_len + 1);
     if ((ret = httpd_req_recv(req, buf, req->content_len)) <= 0)
     {
         ESP_LOGE(TAG, "Read failed");
+        free(buf);
         return ESP_FAIL;
     }
     buf[ret] = '\0';
@@ -325,9 +328,10 @@ static esp_err_t spec_post_handler(httpd_req_t *req)
     rig_import(buf, error_buf);
     free(buf);
 
-    int len = RIG_ERROR_BUF_LEN + 16;
+    const int len = RIG_ERROR_BUF_LEN + 16;
     char string[len];
     snprintf(string, len, "{\"error\": \"%s\"}", error_buf);
+    httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, string, strlen(string));
 
     return ESP_OK;
@@ -343,6 +347,7 @@ static httpd_handle_t server = NULL;
 void webapp_start()
 {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+    config.max_uri_handlers = 15;
 
     ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
     if (httpd_start(&server, &config) == ESP_OK)

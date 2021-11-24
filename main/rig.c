@@ -104,6 +104,13 @@ static Rig *rig_load_from_json(const char *buf, char *error_buf) // error_buf mu
     const char *error_ptr = cJSON_GetErrorPtr();
     if (error_ptr != NULL)
     {
+      for (int i = 0; i < strlen(error_ptr); i++)
+      {
+        if (error_ptr[i] == '"')
+        {
+          ((char *)error_ptr)[i] = '`'; // Yeah, this is crummy :-/
+        }
+      }
       snprintf(error_buf, RIG_ERROR_BUF_LEN, "Error before: %s", error_ptr);
     }
     else
@@ -116,12 +123,12 @@ static Rig *rig_load_from_json(const char *buf, char *error_buf) // error_buf mu
   cJSON *groups_json = cJSON_GetObjectItemCaseSensitive(json, "groups");
   if (groups_json == NULL)
   {
-    sprintf(error_buf, "Didn't find \"groups\" in top level object");
+    sprintf(error_buf, "Didn't find `groups` in top level object");
     return NULL;
   }
   else if (!cJSON_IsArray(groups_json))
   {
-    sprintf(error_buf, "\"groups\" should be an array");
+    sprintf(error_buf, "`groups` should be an array");
     return NULL;
   }
 
@@ -138,19 +145,19 @@ static Rig *rig_load_from_json(const char *buf, char *error_buf) // error_buf mu
     FixtureGroup *group = rig->groups[i];
     if (!cJSON_IsObject(group_json))
     {
-      sprintf(error_buf, "\"groups\" must only contain objects");
+      sprintf(error_buf, "`groups` must only contain objects");
       return NULL;
     }
 
     cJSON *fixtures_json = cJSON_GetObjectItemCaseSensitive(group_json, "fixtures");
     if (fixtures_json == NULL)
     {
-      sprintf(error_buf, "Didn't find \"fixtures\" in \"group\" object");
+      sprintf(error_buf, "Didn't find `fixtures` in `group` object");
       return NULL;
     }
     else if (!cJSON_IsArray(fixtures_json))
     {
-      sprintf(error_buf, "\"fixtures\" should be an array");
+      sprintf(error_buf, "`fixtures` should be an array");
       return NULL;
     }
     group->n_fixtures = cJSON_GetArraySize(fixtures_json);
@@ -161,12 +168,12 @@ static Rig *rig_load_from_json(const char *buf, char *error_buf) // error_buf mu
     cJSON *name_json = cJSON_GetObjectItemCaseSensitive(group_json, "name");
     if (name_json == NULL)
     {
-      sprintf(error_buf, "Didn't find \"name\" in \"group\" object");
+      sprintf(error_buf, "Didn't find `name` in `group` object");
       return NULL;
     }
     else if (!cJSON_IsString(name_json))
     {
-      sprintf(error_buf, "\"name\" should be a string");
+      sprintf(error_buf, "`name` should be a string");
       return NULL;
     }
     rig->groups[i]->name = cJSON_GetStringValue(name_json);
@@ -174,19 +181,19 @@ static Rig *rig_load_from_json(const char *buf, char *error_buf) // error_buf mu
     cJSON *auto_json = cJSON_GetObjectItemCaseSensitive(group_json, "automator");
     if (name_json == NULL)
     {
-      sprintf(error_buf, "Didn't find \"automator\" in \"group\" object");
+      sprintf(error_buf, "Didn't find `automator` in `group` object");
       return NULL;
     }
     else if (!cJSON_IsString(auto_json))
     {
-      sprintf(error_buf, "\"automator\" should be a string");
+      sprintf(error_buf, "`automator` should be a string");
       return NULL;
     }
     char *automator_str = cJSON_GetStringValue(auto_json);
     AutomatorType automator = automatorTypeFromString(automator_str);
     if (automator == UnknownAutomatorType)
     {
-      snprintf(error_buf, RIG_ERROR_BUF_LEN, "Unknown automator \"%s\"", automator_str);
+      snprintf(error_buf, RIG_ERROR_BUF_LEN, "Unknown automator `%s`", automator_str);
       return NULL;
     }
     group->automator = automator;
