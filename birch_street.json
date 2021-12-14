@@ -32,7 +32,7 @@
                     "channels": [
                         12
                     ],
-                    "level": 100
+                    "level": 40
                 },
                 {
                     "name": "Shop",
@@ -48,7 +48,7 @@
                     "channels": [
                         16
                     ],
-                    "level": 100
+                    "level": 50
                 }
             ]
         },
@@ -87,7 +87,7 @@
                     "channels": [
                         1
                     ],
-                    "level": 100
+                    "level": 40
                 }
             ]
         },
