@@ -15,18 +15,24 @@
     <script>
         window.onload = event => {
             const errorsEl = document.querySelector("#errors");
-            errorsEl.innerHTML = "";
             window.fetch("spec.json")
                 .then(response => response.text())
                 .then(spec => document.querySelector("#spec").value = spec)
                 .catch(ev => document.querySelector("errors").innerHTML = "Connection error");
 
             document.querySelector("#upload").addEventListener('click', ev => {
+                document.querySelector("#tick").style.visibility = "visible";
+                errorsEl.innerHTML = "";
                 window.fetch("spec.json", {
                     method: "POST",
                     body: document.querySelector("#spec").value,
                 }).then(response => response.json())
-                    .then(data => errorsEl.innerHTML = data.error)
+                    .then(data => {
+                        errorsEl.innerHTML = data.error;
+                        if (data.error == "") {
+                            document.querySelector("#tick").style.visibility = "visible";
+                        }
+                    })
                     .catch(ev => errorsEl.innerHTML = "Connection error");;
             });
         }
@@ -56,6 +62,13 @@
                 </div>
                 <div id="errors" class="mui--text-danger"></div>
                 <button id="upload" type="button" class="mui-btn mui-btn--raised">Upload</button>
+                <!-- Ikonate -->
+                <svg id="tick" role="img" xmlns="http://www.w3.org/2000/svg" width="40px" height="40px"
+                    viewBox="0 0 24 24" aria-labelledby="okIconTitle" stroke="#183" stroke-width="4.2"
+                    stroke-linecap="round" stroke-linejoin="round" fill="none" color="#183">
+                    <title id="okIconTitle">Ok</title>
+                    <polyline points="4 13 9 18 20 7" />
+                </svg>
             </form>
         </div>
     </div>

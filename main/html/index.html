@@ -13,35 +13,35 @@
     <script src="mui.min.js"></script>
 
     <script>
-        var groupModes = [];
+        var groupManuals = [];
         var toggleEls = [];
-        var ledEls = [];
-        var ledOns = [];
+        var fixtureEls = [];
+        var fixtureOns = [];
 
         function err() {
             document.querySelector('body').classList.add('disconnected');
         }
 
         function toggleGroup(id) {
-            state = groupModes[id] == "auto" ? "manual" : "auto";
+            state = !groupManuals[id];
             console.log("Set group", id, "to", state);
             fetch('/control', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: id, mode: state })
+                body: JSON.stringify({ id: id, manual: state })
             })
                 .then(response => response.json())
                 .then(data => readState(data))
                 .catch(err);
         }
 
-        function toggleLED(id) {
-            state = !ledOns[id];
-            console.log("Set", id, "to", state);
+        function toggleFix(gid, fid) {
+            state = !fixtureOns[gid][fid];
+            console.log("Set", gid, fid, "to", state);
             fetch('/light', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: id, state: state })
+                body: JSON.stringify({ group_id: gid, fixture_id: fid, state: state })
             })
                 .then(response => response.json())
                 .then(data => readState(data))
@@ -50,8 +50,8 @@
 
         function readState(data) {
             for (const group of data.groups) {
-                groupModes[group.id] = group.mode;
-                let active = group.mode == "manual";
+                groupManuals[group.id] = group.manual;
+                let active = group.manual;
                 if (active) {
                     toggleEls[group.id].classList.add("mui-btn--accent");
                 }
@@ -59,14 +59,15 @@
                     toggleEls[group.id].classList.remove("mui-btn--accent");
                 }
 
-                for (const led of group.leds) {
-                    ledEls[led.id].disabled = !active;
-                    ledOns[led.id] = led.on;
-                    if (led.on) {
-                        ledEls[led.id].classList.add("mui-btn--accent");
+                fixtureOns[group.id] = [];
+                for (const fix of group.fixtures) {
+                    fixtureEls[group.id][fix.id].disabled = !active;
+                    fixtureOns[group.id][fix.id] = fix.on;
+                    if (fix.on) {
+                        fixtureEls[group.id][fix.id].classList.add("mui-btn--accent");
                     }
                     else {
-                        ledEls[led.id].classList.remove("mui-btn--accent");
+                        fixtureEls[group.id][fix.id].classList.remove("mui-btn--accent");
                     }
                 }
             }
@@ -74,7 +75,7 @@
         }
 
         function buildUI(data) {
-            const ledsEl = document.querySelector("#leds");
+            const fixturesEl = document.querySelector("#fixtures");
             for (const group of data.groups) {
                 let groupEl = document.createElement("div");
                 groupEl.className = "mui-panel";
@@ -91,16 +92,18 @@
                 titleEl.innerHTML = group.name;
                 groupEl.appendChild(titleEl);
 
-                for (const led of group.leds) {
-                    let ledEl = document.createElement("button");
-                    ledEl.className = "mui-btn mui-btn--raised";
-                    ledEl.innerHTML = led.name;
+                fixtureEls[group.id] = [];
 
-                    ledEls[led.id] = ledEl;
-                    ledEl.onclick = ev => toggleLED(led.id);
-                    groupEl.appendChild(ledEl);
+                for (const fixture of group.fixtures) {
+                    let fixtureEl = document.createElement("button");
+                    fixtureEl.className = "mui-btn mui-btn--raised";
+                    fixtureEl.innerHTML = fixture.name;
+
+                    fixtureEls[group.id][fixture.id] = fixtureEl;
+                    fixtureEl.onclick = ev => toggleFix(group.id, fixture.id);
+                    groupEl.appendChild(fixtureEl);
                 }
-                ledsEl.appendChild(groupEl);
+                fixturesEl.appendChild(groupEl);
             }
 
             readState(data);
@@ -121,8 +124,8 @@
             setInterval(fetchState, 3000);
 
             document.querySelector("#auto").addEventListener('click', ev => {
-                groupModes.forEach(function (mode, id) {
-                    if (mode != "auto") {
+                groupManuals.forEach(function (manual, id) {
+                    if (manual) {
                         toggleGroup(id);
                     }
                 });
@@ -151,7 +154,7 @@
         <br>
         <br>
         <div class="connected">
-            <div id="leds" class="mui-col-sm-10 mui-col-sm-offset-1">
+            <div id="fixtures" class="mui-col-sm-10 mui-col-sm-offset-1">
             </div>
         </div>
         <div class="disconnected">

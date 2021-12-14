@@ -3,6 +3,7 @@
 #include "cJSON.h"
 
 #include "rig.h"
+#include "control.h"
 
 #include "ico/favicon32.h"
 #include "ico/favicon256.h"
@@ -80,57 +81,42 @@ static const httpd_uri_t mui_css = {
 
 char *get_state()
 {
-    //     board_type_t board_type = chain_type();
+    Rig *rig = rig_get();
 
-    //     group_info_t *group_infos;
-    //     int group_count;
-    //     if (board_type == LEGO_LEADER)
-    //     {
-    //         group_count = defs_lego(&group_infos);
-    //     }
-    //     else
-    //     {
-    //         group_count = defs_railway(&group_infos);
-    //     }
-    //     // ESP_LOGI(TAG, "Group count is %d", group_count);
+    cJSON *state_json = cJSON_CreateObject();
+    cJSON *groups_json = cJSON_CreateArray();
+    for (int i = 0; i < rig->n_groups; i++)
+    {
+        FixtureGroup *fixture_group = rig->groups[i];
+        cJSON *group_json = cJSON_CreateObject();
+        cJSON *gid = cJSON_CreateNumber(i);
+        cJSON_AddItemToObject(group_json, "id", gid);
+        cJSON *gname = cJSON_CreateString(fixture_group->name);
+        cJSON_AddItemToObject(group_json, "name", gname);
+        cJSON *gmanual = fixture_group->manual ? cJSON_CreateTrue() : cJSON_CreateFalse();
+        cJSON_AddItemToObject(group_json, "manual", gmanual);
+        cJSON_AddItemToArray(groups_json, group_json);
 
-    //     cJSON *state = cJSON_CreateObject();
+        cJSON *fixtures_json = cJSON_CreateArray();
+        for (int j = 0; j < fixture_group->n_fixtures; j++)
+        {
+            Fixture *fixture = fixture_group->fixtures[j];
+            cJSON *fixture_json = cJSON_CreateObject();
+            cJSON *fid = cJSON_CreateNumber(j);
+            cJSON_AddItemToObject(fixture_json, "id", fid);
+            cJSON *fname = cJSON_CreateString(fixture->name);
+            cJSON_AddItemToObject(fixture_json, "name", fname);
+            cJSON *fon = cJSON_CreateBool(fixture->on);
+            cJSON_AddItemToObject(fixture_json, "on", fon);
+            cJSON_AddItemToArray(fixtures_json, fixture_json);
+        }
+        cJSON_AddItemToObject(group_json, "fixtures", fixtures_json);
+    }
+    cJSON_AddItemToObject(state_json, "groups", groups_json);
 
-    //     cJSON *groups = cJSON_CreateArray();
-    //     for (int i = 0; i < group_count; i++)
-    //     {
-    //         // ESP_LOGI(TAG, "Group: %s", group_infos[i].name);
-    //         cJSON *group = cJSON_CreateObject();
-    //         cJSON *id = cJSON_CreateNumber(i);
-    //         cJSON_AddItemToObject(group, "id", id);
-    //         cJSON *name = cJSON_CreateString(group_infos[i].name);
-    //         cJSON_AddItemToObject(group, "name", name);
-    //         cJSON *mode = cJSON_CreateString(sched_get_control(i) ? "auto" : "manual");
-    //         cJSON_AddItemToObject(group, "mode", mode);
-    //         cJSON_AddItemToArray(groups, group);
-
-    //         cJSON *leds = cJSON_CreateArray();
-    //         for (int j = 0; j < group_infos[i].n_leds; j++)
-    //         {
-    //             cJSON *led = cJSON_CreateObject();
-    //             cJSON *id = cJSON_CreateNumber(group_infos[i].leds[j].id);
-    //             cJSON_AddItemToObject(led, "id", id);
-    //             cJSON *name = cJSON_CreateString(group_infos[i].leds[j].name);
-    //             cJSON_AddItemToObject(led, "name", name);
-    //             cJSON *on = cJSON_CreateBool(sched_get_state(group_infos[i].leds[j].id));
-    //             cJSON_AddItemToObject(led, "on", on);
-    //             cJSON_AddItemToArray(leds, led);
-    //         }
-    //         cJSON_AddItemToObject(group, "leds", leds);
-    //     }
-    //     cJSON_AddItemToObject(state, "groups", groups);
-
-    //     // Caller must free returned value
-    //     char *string = cJSON_Print(state);
-    //     cJSON_Delete(state);
-    //     return string;
-    char *string = malloc(3);
-    strcpy(string, "{}");
+    // Caller must free returned value
+    char *string = cJSON_Print(state_json);
+    cJSON_Delete(state_json);
     return string;
 }
 
@@ -200,10 +186,10 @@ static esp_err_t control_post_handler(httpd_req_t *req)
         ESP_LOGE(TAG, "JSON group_id wrong");
         fail = true;
     }
-    cJSON *mode = cJSON_GetObjectItemCaseSensitive(json, "mode");
-    if (!cJSON_IsString(mode) || (mode->valuestring == NULL))
+    cJSON *manual = cJSON_GetObjectItemCaseSensitive(json, "manual");
+    if (!cJSON_IsBool(manual))
     {
-        ESP_LOGE(TAG, "JSON mode wrong");
+        ESP_LOGE(TAG, "JSON manual not bool");
         fail = true;
     }
     if (fail)
@@ -212,8 +198,8 @@ static esp_err_t control_post_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    ESP_LOGI(TAG, "Requesting mode %s for group %d", mode->valuestring, group_id->valueint);
-    // sched_control(group_id->valueint, strcmp("auto", mode->valuestring) == 0);
+    ESP_LOGI(TAG, "Requesting manual %d for group %d", cJSON_IsTrue(manual), group_id->valueint);
+    control_set_mode_from_id(group_id->valueint, cJSON_IsTrue(manual));
     cJSON_Delete(json);
 
     char *string = get_state();
@@ -249,11 +235,17 @@ static esp_err_t light_post_handler(httpd_req_t *req)
     buf[ret] = '\0';
 
     cJSON *json = cJSON_Parse(buf);
-    cJSON *led_id = cJSON_GetObjectItemCaseSensitive(json, "id");
+    cJSON *group_id = cJSON_GetObjectItemCaseSensitive(json, "group_id");
+    cJSON *fixture_id = cJSON_GetObjectItemCaseSensitive(json, "fixture_id");
     bool fail = false;
-    if (!cJSON_IsNumber(led_id))
+    if (!cJSON_IsNumber(group_id))
     {
-        ESP_LOGE(TAG, "JSON led_id wrong");
+        ESP_LOGE(TAG, "JSON group_id wrong");
+        fail = true;
+    }
+    if (!cJSON_IsNumber(fixture_id))
+    {
+        ESP_LOGE(TAG, "JSON fixture_id wrong");
         fail = true;
     }
     cJSON *state = cJSON_GetObjectItemCaseSensitive(json, "state");
@@ -268,8 +260,8 @@ static esp_err_t light_post_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    ESP_LOGI(TAG, "Requesting state %d for led %d", cJSON_IsTrue(state), led_id->valueint);
-    // sched_set_state(led_id->valueint, cJSON_IsTrue(state));
+    ESP_LOGI(TAG, "Requesting state %d for group %d, fixture %d", cJSON_IsTrue(state), group_id->valueint, fixture_id->valueint);
+    control_switch_ids(group_id->valueint, fixture_id->valueint, cJSON_IsTrue(state));
     cJSON_Delete(json);
 
     char *string = get_state();
@@ -294,10 +286,10 @@ esp_err_t http_404_error_handler(httpd_req_t *req, httpd_err_code_t err)
 static esp_err_t spec_get_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET spec");
-    char *string = "{}";
+    char *string = rig_get_json();
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, string, strlen(string));
-    // free(string);
+    free(string);
     return ESP_OK;
 }
 

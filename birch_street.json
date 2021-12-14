@@ -1,0 +1,139 @@
+{
+    "groups": [
+        {
+            "name": "Street",
+            "automator": "AlwaysOn",
+            "fixtures": [
+                {
+                    "name": "Streetlight",
+                    "type": "Light",
+                    "channels": [
+                        8
+                    ],
+                    "level": 100
+                }
+            ]
+        },
+        {
+            "name": "Bookshop",
+            "automator": "AlwaysOn",
+            "fixtures": [
+                {
+                    "name": "Bedroom",
+                    "type": "Light",
+                    "channels": [
+                        11
+                    ],
+                    "level": 100
+                },
+                {
+                    "name": "Living Room",
+                    "type": "Light",
+                    "channels": [
+                        12
+                    ],
+                    "level": 100
+                },
+                {
+                    "name": "Shop",
+                    "type": "Light",
+                    "channels": [
+                        15
+                    ],
+                    "level": 100
+                },
+                {
+                    "name": "Lantern",
+                    "type": "Light",
+                    "channels": [
+                        16
+                    ],
+                    "level": 100
+                }
+            ]
+        },
+        {
+            "name": "Townhouse",
+            "automator": "AlwaysOn",
+            "fixtures": [
+                {
+                    "name": "Bedroom",
+                    "type": "Light",
+                    "channels": [
+                        7
+                    ],
+                    "level": 100
+                },
+                {
+                    "name": "Living Room",
+                    "type": "Light",
+                    "channels": [
+                        2
+                    ],
+                    "level": 100
+                },
+                {
+                    "name": "Fire",
+                    "type": "Fire",
+                    "channels": [
+                        5,
+                        6
+                    ],
+                    "level": 100
+                },
+                {
+                    "name": "Door",
+                    "type": "Light",
+                    "channels": [
+                        1
+                    ],
+                    "level": 100
+                }
+            ]
+        },
+        {
+            "name": "Garage",
+            "automator": "AlwaysOn",
+            "fixtures": [
+                {
+                    "name": "Flat",
+                    "type": "Light",
+                    "channels": [
+                        13
+                    ],
+                    "level": 100
+                },
+                {
+                    "name": "Workshop",
+                    "type": "Light",
+                    "channels": [
+                        14
+                    ],
+                    "level": 100
+                }
+            ]
+        },
+        {
+            "name": "Café",
+            "automator": "AlwaysOn",
+            "fixtures": [
+                {
+                    "name": "Flat",
+                    "type": "Light",
+                    "channels": [
+                        3
+                    ],
+                    "level": 100
+                },
+                {
+                    "name": "Café",
+                    "type": "Light",
+                    "channels": [
+                        4
+                    ],
+                    "level": 100
+                }
+            ]
+        }
+    ]
+}

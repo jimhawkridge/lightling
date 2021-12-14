@@ -4,7 +4,7 @@
             "id": 1,
             "name": "Bookshop",
             "mode": "manual",
-            "leds": [
+            "fixtures": [
                 {
                     "id": 0,
                     "name": "Upstairs",
@@ -21,7 +21,7 @@
             "id": 2,
             "name": "Townhouse",
             "mode": "auto",
-            "leds": [
+            "fixtures": [
                 {
                     "id": 2,
                     "name": "Upstairs",
