@@ -92,6 +92,7 @@ static void rig_free(Rig *rig)
 
       free(fix->name);
       free(fix->channels);
+      free(fix->levels);
       free(fix);
     }
     free(group->name);
@@ -190,6 +191,41 @@ static Rig *rig_load_from_cjson(cJSON *json, char *error_buf)
         c++;
       }
 
+      cJSON *levels_json = cJSON_GetObjectItemCaseSensitive(fixture_json, "levels");
+      if (levels_json == NULL)
+      {
+        sprintf(error_buf, "Didn't find `levels` in `fixture` object");
+        return NULL;
+      }
+      else if (!cJSON_IsArray(levels_json))
+      {
+        sprintf(error_buf, "`levels` should be an array");
+        return NULL;
+      }
+      fixture->n_levels = cJSON_GetArraySize(levels_json);
+      size_t levels_size = sizeof(uint8_t) * fixture->n_levels;
+      fixture->levels = malloc(levels_size);
+      memset(fixture->levels, 0, levels_size);
+
+      c = 0;
+      cJSON *level_json;
+      cJSON_ArrayForEach(level_json, levels_json)
+      {
+        if (!cJSON_IsNumber(level_json))
+        {
+          sprintf(error_buf, "`levels` should be a numbers");
+          return NULL;
+        }
+        fixture->levels[c] = level_json->valueint;
+        c++;
+      }
+
+      if (fixture->n_channels != fixture->n_levels)
+      {
+        sprintf(error_buf, "There must be the same number of levels as channels");
+        return NULL;
+      }
+
       cJSON *name_json = cJSON_GetObjectItemCaseSensitive(fixture_json, "name");
       if (name_json == NULL)
       {
@@ -223,19 +259,6 @@ static Rig *rig_load_from_cjson(cJSON *json, char *error_buf)
         return NULL;
       }
       fixture->fixture_type = ftype;
-
-      cJSON *level_json = cJSON_GetObjectItemCaseSensitive(fixture_json, "level");
-      if (level_json == NULL)
-      {
-        sprintf(error_buf, "Didn't find `level` in `fixture` object");
-        return NULL;
-      }
-      else if (!cJSON_IsNumber(level_json))
-      {
-        sprintf(error_buf, "`level` should be a number");
-        return NULL;
-      }
-      fixture->level = level_json->valueint;
 
       j++;
     }

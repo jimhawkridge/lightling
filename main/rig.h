@@ -18,7 +18,8 @@ typedef struct
     bool on;
     uint8_t n_channels;
     uint8_t *channels;
-    uint8_t level;
+    uint8_t n_levels;
+    uint8_t *levels;
 } Fixture;
 
 typedef enum AutomatorTypeEnum

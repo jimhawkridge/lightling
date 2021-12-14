@@ -1,12 +1,17 @@
-#include "leds.h"
+#include "esp_log.h"
+
+#include "chain.h"
 #include "rig.h"
+
+static const char *TAG = "CONTROL";
 
 void control_fixture_switch(Fixture *fixture, bool on)
 {
-    uint8_t brightness = on ? fixture->level : 0;
     for (int i = 0; i < fixture->n_channels; i++)
     {
-        leds_fade_channel(fixture->channels[i], brightness, 50);
+        uint8_t brightness = on ? fixture->levels[i] : 0;
+        ESP_LOGI(TAG, "Channel %d bright %d", fixture->channels[i], brightness);
+        chain_fade_channel(fixture->channels[i], brightness, 50);
     }
     fixture->on = on;
 }
