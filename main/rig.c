@@ -1,65 +1,58 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "esp_log.h"
-#include "nvs_flash.h"
-#include "nvs.h"
 #include "cJSON.h"
+#include "esp_log.h"
+#include "nvs.h"
+#include "nvs_flash.h"
 
 #include "rig.h"
 
-static const char *TAG = "RIG";
-const char *NVS_DATA_PART = "data";
-const char *NVS_RIG_NS = "rig";
-const char *NVS_RIG_KEY = "rig";
+static const char* TAG = "RIG";
+const char* NVS_DATA_PART = "data";
+const char* NVS_RIG_NS = "rig";
+const char* NVS_RIG_KEY = "rig";
 
-static Rig *the_rig = NULL;
+static Rig* the_rig = NULL;
 
-FixtureType fixtureTypeFromString(const char *str)
-{
-  if (!strcasecmp("Light", str))
-  {
+FixtureType fixtureTypeFromString(const char* str) {
+  if (!strcasecmp("Light", str)) {
     return Light;
-  }
-  else if (!strcasecmp("Fire", str))
-  {
+  } else if (!strcasecmp("Fire", str)) {
     return Fire;
-  }
-  else
-  {
+  } else if (!strcasecmp("Fluoro", str)) {
+    return Fluoro;
+  } else if (!strcasecmp("Fade", str)) {
+    return Fade;
+  } else if (!strcasecmp("Flickering", str)) {
+    return Flickering;
+  } else {
     return UnknownFixtureType;
   }
 }
 
-AutomatorType automatorTypeFromString(const char *str)
-{
-  if (!strcasecmp("AlwaysOn", str))
-  {
+AutomatorType automatorTypeFromString(const char* str) {
+  if (!strcasecmp("AlwaysOn", str)) {
     return AlwaysOn;
-  }
-  else if (!strcasecmp("AlwaysOff", str))
-  {
+  } else if (!strcasecmp("AlwaysOff", str)) {
     return AlwaysOff;
-  }
-  else if (!strcasecmp("OneUpOneDownAutomator", str))
-  {
+  } else if (!strcasecmp("OneUpOneDownAutomator", str)) {
     return OneUpOneDownAutomator;
-  }
-  else if (!strcasecmp("TownhouseAutomator", str))
-  {
+  } else if (!strcasecmp("TownhouseAutomator", str)) {
     return TownhouseAutomator;
-  }
-  else
-  {
+  } else if (!strcasecmp("StreetAutomator", str)) {
+    return StreetAutomator;
+  } else if (!strcasecmp("BookshopAutomator", str)) {
+    return BookshopAutomator;
+  } else {
     return UnknownAutomatorType;
   }
 }
 
-void rig_init()
-{
+void rig_init() {
   esp_err_t ret = nvs_flash_init_partition(NVS_DATA_PART);
-  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
-  {
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
+      ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
     ESP_LOGE(TAG, "Erasing and initing 'data' NVS");
     ESP_ERROR_CHECK(nvs_flash_erase());
     ret = nvs_flash_init();
@@ -67,26 +60,20 @@ void rig_init()
   ESP_ERROR_CHECK(ret);
 }
 
-static void rig_free(Rig *rig)
-{
-  if (rig == NULL)
-  {
+static void rig_free(Rig* rig) {
+  if (rig == NULL) {
     return;
   }
 
-  for (int g = 0; g < rig->n_groups; g++)
-  {
-    FixtureGroup *group = rig->groups[g];
-    if (group == NULL)
-    {
+  for (int g = 0; g < rig->n_groups; g++) {
+    FixtureGroup* group = rig->groups[g];
+    if (group == NULL) {
       break;
     }
 
-    for (int f = 0; f < group->n_fixtures; f++)
-    {
-      Fixture *fix = group->fixtures[f];
-      if (fix == NULL)
-      {
+    for (int f = 0; f < group->n_fixtures; f++) {
+      Fixture* fix = group->fixtures[f];
+      if (fix == NULL) {
         break;
       }
 
@@ -101,75 +88,63 @@ static void rig_free(Rig *rig)
   free(rig);
 }
 
-static Rig *rig_load_from_cjson(cJSON *json, char *error_buf)
-{
-  cJSON *groups_json = cJSON_GetObjectItemCaseSensitive(json, "groups");
-  if (groups_json == NULL)
-  {
+static Rig* rig_load_from_cjson(cJSON* json, char* error_buf) {
+  cJSON* groups_json = cJSON_GetObjectItemCaseSensitive(json, "groups");
+  if (groups_json == NULL) {
     sprintf(error_buf, "Didn't find `groups` in top level object");
     return NULL;
-  }
-  else if (!cJSON_IsArray(groups_json))
-  {
+  } else if (!cJSON_IsArray(groups_json)) {
     sprintf(error_buf, "`groups` should be an array");
     return NULL;
   }
 
-  Rig *rig = malloc(sizeof(Rig));
+  Rig* rig = malloc(sizeof(Rig));
   rig->n_groups = cJSON_GetArraySize(groups_json);
-  size_t groups_size = sizeof(FixtureGroup *) * rig->n_groups;
+  size_t groups_size = sizeof(FixtureGroup*) * rig->n_groups;
   rig->groups = malloc(groups_size);
   memset(rig->groups, 0, groups_size);
   uint8_t i = 0;
-  cJSON *group_json;
-  cJSON_ArrayForEach(group_json, groups_json)
-  {
+  cJSON* group_json;
+  cJSON_ArrayForEach(group_json, groups_json) {
     rig->groups[i] = malloc(sizeof(FixtureGroup));
-    FixtureGroup *group = rig->groups[i];
+    FixtureGroup* group = rig->groups[i];
     group->manual = false;
-    if (!cJSON_IsObject(group_json))
-    {
+    if (!cJSON_IsObject(group_json)) {
       sprintf(error_buf, "`groups` must only contain objects");
       return NULL;
     }
 
-    cJSON *fixtures_json = cJSON_GetObjectItemCaseSensitive(group_json, "fixtures");
-    if (fixtures_json == NULL)
-    {
+    cJSON* fixtures_json =
+        cJSON_GetObjectItemCaseSensitive(group_json, "fixtures");
+    if (fixtures_json == NULL) {
       sprintf(error_buf, "Didn't find `fixtures` in `group` object");
       return NULL;
-    }
-    else if (!cJSON_IsArray(fixtures_json))
-    {
+    } else if (!cJSON_IsArray(fixtures_json)) {
       sprintf(error_buf, "`fixtures` should be an array");
       return NULL;
     }
     group->n_fixtures = cJSON_GetArraySize(fixtures_json);
-    size_t fixtures_size = sizeof(Fixture *) * group->n_fixtures;
+    size_t fixtures_size = sizeof(Fixture*) * group->n_fixtures;
     group->fixtures = malloc(fixtures_size);
     memset(group->fixtures, 0, fixtures_size);
 
     uint8_t j = 0;
-    cJSON *fixture_json;
-    cJSON_ArrayForEach(fixture_json, fixtures_json)
-    {
+    cJSON* fixture_json;
+    cJSON_ArrayForEach(fixture_json, fixtures_json) {
       group->fixtures[j] = malloc(sizeof(Fixture));
-      Fixture *fixture = group->fixtures[j];
+      Fixture* fixture = group->fixtures[j];
       fixture->on = false;
-      if (!cJSON_IsObject(fixture_json))
-      {
+      if (!cJSON_IsObject(fixture_json)) {
         sprintf(error_buf, "`fixtures` must only contain objects");
         return NULL;
       }
 
-      cJSON *channels_json = cJSON_GetObjectItemCaseSensitive(fixture_json, "channels");
-      if (channels_json == NULL)
-      {
+      cJSON* channels_json =
+          cJSON_GetObjectItemCaseSensitive(fixture_json, "channels");
+      if (channels_json == NULL) {
         sprintf(error_buf, "Didn't find `channels` in `fixture` object");
         return NULL;
-      }
-      else if (!cJSON_IsArray(channels_json))
-      {
+      } else if (!cJSON_IsArray(channels_json)) {
         sprintf(error_buf, "`channels` should be an array");
         return NULL;
       }
@@ -179,26 +154,23 @@ static Rig *rig_load_from_cjson(cJSON *json, char *error_buf)
       memset(fixture->channels, 0, channels_size);
 
       uint8_t c = 0;
-      cJSON *channel_json;
-      cJSON_ArrayForEach(channel_json, channels_json)
-      {
-        if (!cJSON_IsNumber(channel_json))
-        {
+      cJSON* channel_json;
+      cJSON_ArrayForEach(channel_json, channels_json) {
+        if (!cJSON_IsNumber(channel_json)) {
           sprintf(error_buf, "`channels` should be a numbers");
           return NULL;
         }
-        fixture->channels[c] = channel_json->valueint - 1; // 0 based in code, 1 based in JSON / on si
+        fixture->channels[c] = channel_json->valueint -
+                               1;  // 0 based in code, 1 based in JSON / on si
         c++;
       }
 
-      cJSON *levels_json = cJSON_GetObjectItemCaseSensitive(fixture_json, "levels");
-      if (levels_json == NULL)
-      {
+      cJSON* levels_json =
+          cJSON_GetObjectItemCaseSensitive(fixture_json, "levels");
+      if (levels_json == NULL) {
         sprintf(error_buf, "Didn't find `levels` in `fixture` object");
         return NULL;
-      }
-      else if (!cJSON_IsArray(levels_json))
-      {
+      } else if (!cJSON_IsArray(levels_json)) {
         sprintf(error_buf, "`levels` should be an array");
         return NULL;
       }
@@ -208,11 +180,9 @@ static Rig *rig_load_from_cjson(cJSON *json, char *error_buf)
       memset(fixture->levels, 0, levels_size);
 
       c = 0;
-      cJSON *level_json;
-      cJSON_ArrayForEach(level_json, levels_json)
-      {
-        if (!cJSON_IsNumber(level_json))
-        {
+      cJSON* level_json;
+      cJSON_ArrayForEach(level_json, levels_json) {
+        if (!cJSON_IsNumber(level_json)) {
           sprintf(error_buf, "`levels` should be a numbers");
           return NULL;
         }
@@ -220,42 +190,36 @@ static Rig *rig_load_from_cjson(cJSON *json, char *error_buf)
         c++;
       }
 
-      if (fixture->n_channels != fixture->n_levels)
-      {
-        sprintf(error_buf, "There must be the same number of levels as channels");
+      if (fixture->n_channels != fixture->n_levels) {
+        sprintf(error_buf,
+                "There must be the same number of levels as channels");
         return NULL;
       }
 
-      cJSON *name_json = cJSON_GetObjectItemCaseSensitive(fixture_json, "name");
-      if (name_json == NULL)
-      {
+      cJSON* name_json = cJSON_GetObjectItemCaseSensitive(fixture_json, "name");
+      if (name_json == NULL) {
         sprintf(error_buf, "Didn't find `name` in `fixture` object");
         return NULL;
-      }
-      else if (!cJSON_IsString(name_json))
-      {
+      } else if (!cJSON_IsString(name_json)) {
         sprintf(error_buf, "`name` should be a string");
         return NULL;
       }
       fixture->name = malloc(strlen(cJSON_GetStringValue(name_json)) + 1);
       strcpy(fixture->name, cJSON_GetStringValue(name_json));
 
-      cJSON *type_json = cJSON_GetObjectItemCaseSensitive(fixture_json, "type");
-      if (name_json == NULL)
-      {
+      cJSON* type_json = cJSON_GetObjectItemCaseSensitive(fixture_json, "type");
+      if (name_json == NULL) {
         sprintf(error_buf, "Didn't find `type` in `fixture` object");
         return NULL;
-      }
-      else if (!cJSON_IsString(type_json))
-      {
+      } else if (!cJSON_IsString(type_json)) {
         sprintf(error_buf, "`type` should be a string");
         return NULL;
       }
-      char *type_str = cJSON_GetStringValue(type_json);
+      char* type_str = cJSON_GetStringValue(type_json);
       FixtureType ftype = fixtureTypeFromString(type_str);
-      if (ftype == UnknownFixtureType)
-      {
-        snprintf(error_buf, RIG_ERROR_BUF_LEN, "Unknown fixture type `%s`", type_str);
+      if (ftype == UnknownFixtureType) {
+        snprintf(error_buf, RIG_ERROR_BUF_LEN, "Unknown fixture type `%s`",
+                 type_str);
         return NULL;
       }
       fixture->fixture_type = ftype;
@@ -263,36 +227,31 @@ static Rig *rig_load_from_cjson(cJSON *json, char *error_buf)
       j++;
     }
 
-    cJSON *name_json = cJSON_GetObjectItemCaseSensitive(group_json, "name");
-    if (name_json == NULL)
-    {
+    cJSON* name_json = cJSON_GetObjectItemCaseSensitive(group_json, "name");
+    if (name_json == NULL) {
       sprintf(error_buf, "Didn't find `name` in `group` object");
       return NULL;
-    }
-    else if (!cJSON_IsString(name_json))
-    {
+    } else if (!cJSON_IsString(name_json)) {
       sprintf(error_buf, "`name` should be a string");
       return NULL;
     }
     group->name = malloc(strlen(cJSON_GetStringValue(name_json)) + 1);
     strcpy(group->name, cJSON_GetStringValue(name_json));
 
-    cJSON *auto_json = cJSON_GetObjectItemCaseSensitive(group_json, "automator");
-    if (name_json == NULL)
-    {
+    cJSON* auto_json =
+        cJSON_GetObjectItemCaseSensitive(group_json, "automator");
+    if (name_json == NULL) {
       sprintf(error_buf, "Didn't find `automator` in `group` object");
       return NULL;
-    }
-    else if (!cJSON_IsString(auto_json))
-    {
+    } else if (!cJSON_IsString(auto_json)) {
       sprintf(error_buf, "`automator` should be a string");
       return NULL;
     }
-    char *automator_str = cJSON_GetStringValue(auto_json);
+    char* automator_str = cJSON_GetStringValue(auto_json);
     AutomatorType automator = automatorTypeFromString(automator_str);
-    if (automator == UnknownAutomatorType)
-    {
-      snprintf(error_buf, RIG_ERROR_BUF_LEN, "Unknown automator `%s`", automator_str);
+    if (automator == UnknownAutomatorType) {
+      snprintf(error_buf, RIG_ERROR_BUF_LEN, "Unknown automator `%s`",
+               automator_str);
       return NULL;
     }
     group->automator = automator;
@@ -303,55 +262,47 @@ static Rig *rig_load_from_cjson(cJSON *json, char *error_buf)
   return rig;
 }
 
-static Rig *rig_load_from_json(const char *buf, char *error_buf) // error_buf must be ERROR_BUF_LEN bytes
+static Rig* rig_load_from_json(
+    const char* buf,
+    char* error_buf)  // error_buf must be ERROR_BUF_LEN bytes
 {
-  cJSON *json = cJSON_Parse(buf);
-  if (json == NULL)
-  {
-    const char *error_ptr = cJSON_GetErrorPtr();
-    if (error_ptr != NULL)
-    {
-      for (int i = 0; i < strlen(error_ptr); i++)
-      {
-        if (error_ptr[i] == '"')
-        {
-          ((char *)error_ptr)[i] = '`'; // Yeah, this is crummy :-/
+  cJSON* json = cJSON_Parse(buf);
+  if (json == NULL) {
+    const char* error_ptr = cJSON_GetErrorPtr();
+    if (error_ptr != NULL) {
+      for (int i = 0; i < strlen(error_ptr); i++) {
+        if (error_ptr[i] == '"') {
+          ((char*)error_ptr)[i] = '`';  // Yeah, this is crummy :-/
         }
       }
       snprintf(error_buf, RIG_ERROR_BUF_LEN, "Error before: %s", error_ptr);
-    }
-    else
-    {
+    } else {
       sprintf(error_buf, "Parse error at unknown location");
     }
     return NULL;
   }
 
-  Rig *rig = rig_load_from_cjson(json, error_buf);
+  Rig* rig = rig_load_from_cjson(json, error_buf);
   cJSON_Delete(json);
   return rig;
 }
 
 // Omit "json" if you don't want the JSON back
 // If you supply it then you own the loaded spec
-static void rig_load_from_nvs(char **json)
-{
+static void rig_load_from_nvs(char** json) {
   nvs_handle_t handle;
   esp_err_t err;
-  char *spec;
+  char* spec;
 
   ESP_ERROR_CHECK(nvs_open(NVS_RIG_NS, NVS_READONLY, &handle));
 
   size_t required_size = 0;
   err = nvs_get_blob(handle, NVS_RIG_KEY, NULL, &required_size);
-  if (err != ESP_OK)
-  {
-    char *default_spec = "{\"groups\": []}";
+  if (err != ESP_OK) {
+    char* default_spec = "{\"groups\": []}";
     spec = malloc(strlen(default_spec) + 1);
     strcpy(spec, default_spec);
-  }
-  else
-  {
+  } else {
     spec = malloc(required_size);
     ESP_ERROR_CHECK(nvs_get_blob(handle, NVS_RIG_KEY, spec, &required_size));
   }
@@ -363,18 +314,14 @@ static void rig_load_from_nvs(char **json)
   the_rig = rig_load_from_json(spec, error_buf);
   ESP_LOGI(TAG, "Loaded rig with maybe some errors: %s", error_buf);
 
-  if (json)
-  {
+  if (json) {
     *json = spec;
-  }
-  else
-  {
+  } else {
     free(spec);
   }
 }
 
-static bool rig_save_to_nvs(const char *spec)
-{
+static bool rig_save_to_nvs(const char* spec) {
   nvs_handle_t handle;
   esp_err_t err;
 
@@ -392,40 +339,34 @@ static bool rig_save_to_nvs(const char *spec)
   return true;
 }
 
-Rig *rig_get()
-{
-  if (the_rig == NULL)
-  {
+Rig* rig_get() {
+  if (the_rig == NULL) {
     rig_load_from_nvs(NULL);
   }
   return the_rig;
 }
 
-// Called owns spec
-char *rig_get_json()
-{
-  char *spec;
+// Caller owns spec
+char* rig_get_json() {
+  char* spec;
   rig_load_from_nvs(&spec);
   return spec;
 }
 
-void rig_import(const char *buf, char *error_buf)
-{
-  Rig *new_rig = rig_load_from_json(buf, error_buf);
-  if (new_rig == NULL)
-  {
+void rig_import(const char* buf, char* error_buf) {
+  Rig* new_rig = rig_load_from_json(buf, error_buf);
+  if (new_rig == NULL) {
     rig_free(new_rig);
     return;
   }
 
   bool saved = rig_save_to_nvs(buf);
-  if (!saved)
-  {
+  if (!saved) {
     sprintf(error_buf, "Parsed OK, but failed to save to storage");
     return;
   }
 
-  Rig *old_rig = the_rig;
+  Rig* old_rig = the_rig;
   the_rig = new_rig;
   rig_free(old_rig);
 }

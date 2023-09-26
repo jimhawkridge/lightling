@@ -1,0 +1,1 @@
+void automation_init();

@@ -4,6 +4,7 @@
 // #include "esp_err.h"
 // #include "esp_log.h"
 
+#include "automation.h"
 #include "chain.h"
 #include "e131.h"
 #include "leds.h"
@@ -13,24 +14,20 @@
 
 // static const char *TAG = "MAIN";
 
-void app_main()
-{
-    board_type_t board_type = chain_type();
+void app_main() {
+  board_type_t board_type = chain_type();
+  if (board_type == LEADER) {
+    wifi_init();
+    wifi_connect();
+    e131_init();
 
-    if (board_type == LEADER)
-    {
-        wifi_init();
-        wifi_connect();
-        e131_init();
+    chain_init();
+    leds_init();
+    rig_init();
+    automation_init();
 
-        chain_init();
-        leds_init();
-        rig_init();
-
-        webapp_start();
-    }
-    else
-    {
-        chain_follower_run();
-    }
+    webapp_start();
+  } else {
+    chain_follower_run();
+  }
 }

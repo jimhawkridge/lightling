@@ -1,8 +1,10 @@
 {
-	"groups": [{
+	"groups": [
+		{
 			"name": "Street",
-			"automator": "AlwaysOn",
-			"fixtures": [{
+			"automator": "StreetAutomator",
+			"fixtures": [
+				{
 					"name": "Streetlight",
 					"type": "Light",
 					"channels": [
@@ -16,28 +18,77 @@
 					"name": "Christmas!",
 					"type": "Light",
 					"channels": [
-						17, 23, 24, 20, 21, 27, 19, 22, 25, 26
+						17,
+						23,
+						24,
+						20,
+						21,
+						27,
+						19,
+						22,
+						25,
+						26
 					],
 					"levels": [
-						40, 40, 40, 100, 100, 100, 40, 40, 40, 40
+						40,
+						40,
+						40,
+						100,
+						100,
+						100,
+						40,
+						40,
+						40,
+						40
 					]
 				},
 				{
 					"name": "Tree",
 					"type": "Light",
 					"channels": [
-						29, 28, 30
+						29,
+						28,
+						30
 					],
 					"levels": [
-						40, 100, 40
+						40,
+						100,
+						40
+					]
+				}
+			]
+		},
+		{
+			"name": "Garage",
+			"automator": "OneUpOneDownAutomator",
+			"fixtures": [
+				{
+					"name": "Flat",
+					"type": "Light",
+					"channels": [
+						13
+					],
+					"levels": [
+						100
+					]
+				},
+				{
+					"name": "Workshop",
+					"type": "Light",
+					"channels": [
+						14
+					],
+					"levels": [
+						100
 					]
 				}
 			]
 		},
 		{
 			"name": "Bookshop",
-			"automator": "AlwaysOn",
-			"fixtures": [{
+			"automator": "BookshopAutomator",
+			"fixtures": [
+				{
 					"name": "Bedroom",
 					"type": "Light",
 					"channels": [
@@ -81,18 +132,21 @@
 					"name": "Tree",
 					"type": "Light",
 					"channels": [
-						31, 32
+						31,
+						32
 					],
 					"levels": [
-						50, 50
+						50,
+						50
 					]
 				}
 			]
 		},
 		{
 			"name": "Townhouse",
-			"automator": "AlwaysOn",
-			"fixtures": [{
+			"automator": "TownhouseAutomator",
+			"fixtures": [
+				{
 					"name": "Bedroom",
 					"type": "Light",
 					"channels": [
@@ -121,7 +175,7 @@
 					],
 					"levels": [
 						100,
-                        100
+						100
 					]
 				},
 				{
@@ -137,34 +191,10 @@
 			]
 		},
 		{
-			"name": "Garage",
-			"automator": "AlwaysOn",
-			"fixtures": [{
-					"name": "Flat",
-					"type": "Light",
-					"channels": [
-						13
-					],
-					"levels": [
-						100
-					]
-				},
-				{
-					"name": "Workshop",
-					"type": "Light",
-					"channels": [
-						14
-					],
-					"levels": [
-						100
-					]
-				}
-			]
-		},
-		{
 			"name": "Café",
-			"automator": "AlwaysOn",
-			"fixtures": [{
+			"automator": "OneUpOneDownAutomator",
+			"fixtures": [
+				{
 					"name": "Flat",
 					"type": "Light",
 					"channels": [
