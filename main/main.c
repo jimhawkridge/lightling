@@ -9,25 +9,28 @@
 #include "e131.h"
 #include "leds.h"
 #include "rig.h"
+#include "tlc5940.h"
 #include "webapp.h"
 #include "wifi.h"
 
 // static const char *TAG = "MAIN";
 
 void app_main() {
-  board_type_t board_type = chain_type();
-  if (board_type == LEADER) {
-    wifi_init();
-    wifi_connect();
-    e131_init();
+  // board_type_t board_type = chain_type();
+  // chain_init();
 
-    chain_init();
-    leds_init();
-    rig_init();
-    automation_init();
+  // if (board_type == LEADER) {
+  wifi_init();
+  wifi_connect();
+  e131_init();
 
-    webapp_start();
-  } else {
-    chain_follower_run();
-  }
+  leds_init();
+  tlc_init();
+  rig_init();
+  automation_init();
+
+  webapp_start();
+  // } else {
+  //   chain_follower_run();
+  // }
 }

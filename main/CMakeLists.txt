@@ -1,3 +1,3 @@
 
-idf_component_register(SRCS "fixturetypes.c" "automation.c" "chain.c" "rig.c" "e131.c" "leds.c" "main.c" "webapp.c" "wifi.c" "control.c"
-                       EMBED_TXTFILES "html/index.html" "html/spec.html" "html/style.css" "html/mui.min.js" "html/mui.min.css")
+idf_component_register(SRCS "automation.c" "chain.c" "control.c" "fixturetypes.c" "e131.c" "leds.c" "main.c" "rig.c" "tlc5940.c" "webapp.c" "wifi.c"
+    EMBED_TXTFILES "html/index.html" "html/spec.html" "html/style.css" "html/mui.min.js" "html/mui.min.css")
