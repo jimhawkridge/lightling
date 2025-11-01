@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <strings.h>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 #define RIG_ERROR_BUF_LEN 128
 
 typedef enum FixtureTypeEnum {
@@ -13,8 +16,11 @@ typedef enum FixtureTypeEnum {
   Fire,
   Fluoro,
   Fade,
-  Flickering
+  Flickering,
+  Blinking,
 } FixtureType;
+
+typedef void (*switcher_t)(void*, bool);
 
 typedef struct {
   FixtureType fixture_type;
@@ -25,6 +31,8 @@ typedef struct {
   uint8_t n_levels;
   uint8_t* levels;
   void* state;
+  TaskHandle_t task;
+  switcher_t switcher;
 } Fixture;
 
 typedef enum AutomatorTypeEnum {

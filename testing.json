@@ -1,0 +1,494 @@
+{
+	"groups": [
+		{
+			"name": "LEDC",
+			"automator": "AlwaysOn",
+			"fixtures": [
+				{
+					"name": "1+2",
+					"type": "Fire",
+					"channels": [
+						1,
+						2
+					],
+					"levels": [
+						255,
+						100
+					]
+				},
+				{
+					"name": "3",
+					"type": "Light",
+					"channels": [
+						3
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "4",
+					"type": "Light",
+					"channels": [
+						4
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "5",
+					"type": "Light",
+					"channels": [
+						5
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "6",
+					"type": "Light",
+					"channels": [
+						6
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "7",
+					"type": "Light",
+					"channels": [
+						7
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "8",
+					"type": "Light",
+					"channels": [
+						8
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "9",
+					"type": "Light",
+					"channels": [
+						9
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "10",
+					"type": "Light",
+					"channels": [
+						10
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "11",
+					"type": "Light",
+					"channels": [
+						11
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "12",
+					"type": "Light",
+					"channels": [
+						12
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "13",
+					"type": "Light",
+					"channels": [
+						13
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "14",
+					"type": "Light",
+					"channels": [
+						14
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "15",
+					"type": "Light",
+					"channels": [
+						15
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "16",
+					"type": "Light",
+					"channels": [
+						16
+					],
+					"levels": [
+						255
+					]
+				}
+			]
+		},
+		{
+			"name": "TLC Chip 1",
+			"automator": "AlwaysOn",
+			"fixtures": [
+				{
+					"name": "1",
+					"type": "Blinking",
+					"channels": [
+						17
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "2",
+					"type": "Light",
+					"channels": [
+						18
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "3",
+					"type": "Light",
+					"channels": [
+						19
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "4",
+					"type": "Light",
+					"channels": [
+						20
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "5",
+					"type": "Light",
+					"channels": [
+						21
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "6",
+					"type": "Light",
+					"channels": [
+						22
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "7",
+					"type": "Light",
+					"channels": [
+						23
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "8",
+					"type": "Light",
+					"channels": [
+						24
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "9",
+					"type": "Light",
+					"channels": [
+						25
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "10",
+					"type": "Light",
+					"channels": [
+						26
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "11",
+					"type": "Light",
+					"channels": [
+						27
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "12",
+					"type": "Light",
+					"channels": [
+						28
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "13",
+					"type": "Light",
+					"channels": [
+						29
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "14",
+					"type": "Light",
+					"channels": [
+						30
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "15",
+					"type": "Light",
+					"channels": [
+						31
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "16",
+					"type": "Light",
+					"channels": [
+						32
+					],
+					"levels": [
+						255
+					]
+				}
+			]
+		},
+		{
+			"name": "TLC Chip 2",
+			"automator": "AlwaysOn",
+			"fixtures": [
+				{
+					"name": "1",
+					"type": "Light",
+					"channels": [
+						33
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "2",
+					"type": "Light",
+					"channels": [
+						34
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "3",
+					"type": "Light",
+					"channels": [
+						35
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "4",
+					"type": "Light",
+					"channels": [
+						36
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "5",
+					"type": "Light",
+					"channels": [
+						37
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "6",
+					"type": "Light",
+					"channels": [
+						38
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "7",
+					"type": "Light",
+					"channels": [
+						39
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "8",
+					"type": "Light",
+					"channels": [
+						40
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "9",
+					"type": "Light",
+					"channels": [
+						41
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "10",
+					"type": "Light",
+					"channels": [
+						42
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "11",
+					"type": "Light",
+					"channels": [
+						43
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "12",
+					"type": "Light",
+					"channels": [
+						44
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "13",
+					"type": "Light",
+					"channels": [
+						45
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "14",
+					"type": "Light",
+					"channels": [
+						46
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "15",
+					"type": "Light",
+					"channels": [
+						47
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "16",
+					"type": "Light",
+					"channels": [
+						48
+					],
+					"levels": [
+						255
+					]
+				}
+			]
+		}
+	]
+}

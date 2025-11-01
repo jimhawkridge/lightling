@@ -40,8 +40,6 @@ void wifi_init() {
 }
 
 void wifi_connect() {
-  esp_netif_create_default_wifi_sta();
-
   wifi_config_t wifi_config = {
       .sta =
           {

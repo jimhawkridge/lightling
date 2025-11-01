@@ -6,6 +6,7 @@
 #include "nvs.h"
 #include "nvs_flash.h"
 
+#include "fixturetypes.h"
 #include "rig.h"
 
 static const char* TAG = "RIG";
@@ -26,6 +27,8 @@ FixtureType fixtureTypeFromString(const char* str) {
     return Fade;
   } else if (!strcasecmp("Flickering", str)) {
     return Flickering;
+  } else if (!strcasecmp("Blinking", str)) {
+    return Blinking;
   } else {
     return UnknownFixtureType;
   }
@@ -51,16 +54,21 @@ AutomatorType automatorTypeFromString(const char* str) {
 
 void rig_init() {
   esp_err_t ret = nvs_flash_init_partition(NVS_DATA_PART);
-  if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
-      ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+  if (ret != ESP_OK) {
     ESP_LOGE(TAG, "Erasing and initing 'data' NVS");
     ESP_ERROR_CHECK(nvs_flash_erase());
-    ret = nvs_flash_init();
+    ESP_ERROR_CHECK(nvs_flash_init());
   }
-  ESP_ERROR_CHECK(ret);
+
+  // Need to open the NVS readwrite to ensure it is created if it doesn't
+  // already exist.
+  nvs_handle_t handle;
+  ESP_ERROR_CHECK(nvs_open(NVS_RIG_NS, NVS_READWRITE, &handle));
+  nvs_close(handle);
 }
 
 static void rig_free(Rig* rig) {
+  ESP_LOGI(TAG, "Free rig %p", rig);
   if (rig == NULL) {
     return;
   }
@@ -77,11 +85,16 @@ static void rig_free(Rig* rig) {
         break;
       }
 
+      ESP_LOGI(TAG, "Freeing fixture %s", fix->name);
       free(fix->name);
       free(fix->channels);
       free(fix->levels);
+      if (fix->task != NULL) {
+        vTaskDelete(fix->task);
+      }
       free(fix);
     }
+    ESP_LOGI(TAG, "Freeing group %s", group->name);
     free(group->name);
     free(group);
   }
@@ -223,6 +236,7 @@ static Rig* rig_load_from_cjson(cJSON* json, char* error_buf) {
         return NULL;
       }
       fixture->fixture_type = ftype;
+      fixturetypes_init_fixture(fixture);
 
       j++;
     }
@@ -275,7 +289,9 @@ static Rig* rig_load_from_json(
           ((char*)error_ptr)[i] = '`';  // Yeah, this is crummy :-/
         }
       }
-      snprintf(error_buf, RIG_ERROR_BUF_LEN, "Error before: %s", error_ptr);
+      uint error_offset = error_ptr - buf;
+      snprintf(error_buf, RIG_ERROR_BUF_LEN, "At pos %d. Error before: %s",
+               error_offset, error_ptr);
     } else {
       sprintf(error_buf, "Parse error at unknown location");
     }
@@ -319,6 +335,7 @@ static void rig_load_from_nvs(char** json) {
   } else {
     free(spec);
   }
+  ESP_LOGI(TAG, "rig_load_from_nvs success");
 }
 
 static bool rig_save_to_nvs(const char* spec) {

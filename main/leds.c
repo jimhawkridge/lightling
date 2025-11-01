@@ -7,7 +7,7 @@
 
 #include "leds.h"
 
-static const char* TAG = "LIGHT";
+// static const char* TAG = "LIGHT";
 
 static uint8_t last_values[LED_CHANS];
 
@@ -19,8 +19,8 @@ void leds_fade_channel(int channel, uint8_t brightness, uint32_t time) {
 
   uint32_t value = brightness << 5;
   ledc_mode_t mode = LEDC_HIGH_SPEED_MODE;
-  ESP_LOGI(TAG, "Lighting channel %d to %u (%lu) over %lums", channel,
-           brightness, value, time);
+  // ESP_LOGI(TAG, "Lighting channel %d to %u (%lu) over %lums", channel,
+  //          brightness, value, time);
   if (channel > 7) {
     mode = LEDC_LOW_SPEED_MODE;
     channel -= 8;
@@ -42,8 +42,10 @@ void leds_init() {
   ledc_timer.timer_num = LEDC_TIMER_1;
   ledc_timer_config(&ledc_timer);
 
-  int gpios[LED_CHANS] = {19, 23, 18, 5,  10, 9,  4,  2,
-                          33, 25, 26, 27, 14, 12, 13, 15};
+  // int gpios[LED_CHANS] = {32, 33, 25, 26, 27, 14, 12, 13,
+  //                         0,  15, 2,  4,  16, 17, 5,  3};
+  int gpios[LED_CHANS] = {3,  5,  17, 16, 4,  2,  15, 13,
+                          12, 14, 27, 26, 25, 33, 32, 0};
   for (int i = 0; i < LED_CHANS; i++) {
     bool is_low = i > 7;
     ledc_channel_config_t chan = {

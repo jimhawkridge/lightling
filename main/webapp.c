@@ -3,6 +3,7 @@
 #include "esp_log.h"
 
 #include "control.h"
+#include "fixturetypes.h"
 #include "rig.h"
 
 #include "ico/favicon256.h"
@@ -231,7 +232,7 @@ static esp_err_t light_post_handler(httpd_req_t* req) {
 
   ESP_LOGI(TAG, "Requesting state %d for group %d, fixture %d",
            cJSON_IsTrue(state), group_id->valueint, fixture_id->valueint);
-  control_switch_ids(group_id->valueint, fixture_id->valueint,
+  fixture_switch_ids(group_id->valueint, fixture_id->valueint,
                      cJSON_IsTrue(state));
   cJSON_Delete(json);
 
@@ -269,20 +270,28 @@ static const httpd_uri_t spec_get = {.uri = "/spec.json",
 
 static esp_err_t spec_post_handler(httpd_req_t* req) {
   ESP_LOGI(TAG, "POST spec");
-  int ret;
+  int ret = 0;
   if (req->content_len > 1 << 16) {
     ESP_LOGE(TAG, "POST body is too long");
     return ESP_FAIL;
   }
   char* buf = malloc(req->content_len + 1);
-  if ((ret = httpd_req_recv(req, buf, req->content_len)) <= 0) {
-    ESP_LOGE(TAG, "Read failed");
-    free(buf);
-    return ESP_FAIL;
+  int left = req->content_len;
+  while (left > 0) {
+    ESP_LOGI(TAG, "ret: %d, left: %d, len: %d", ret, left, req->content_len);
+    if ((ret = httpd_req_recv(req, buf + ret, left)) <= 0) {
+      ESP_LOGE(TAG, "Read failed");
+      free(buf);
+      return ESP_FAIL;
+    }
+    left -= ret;
   }
-  buf[ret] = '\0';
+  buf[req->content_len - left] = '\0';
 
   char error_buf[RIG_ERROR_BUF_LEN] = "";
+  ESP_LOGI(TAG, "Expected len %d", req->content_len);
+  ESP_LOGI(TAG, "Read %d chars", ret);
+  ESP_LOGI(TAG, "Spec is %s", buf);
   rig_import(buf, error_buf);
   free(buf);
 
