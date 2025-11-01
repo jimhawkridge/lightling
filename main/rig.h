@@ -15,7 +15,6 @@ typedef enum FixtureTypeEnum {
   Light,
   Fire,
   Fluoro,
-  Fade,
   Flickering,
   Blinking,
 } FixtureType;

@@ -17,11 +17,7 @@ typedef struct {
 
 typedef struct {
   int frame;
-} FluroFixtureState;
-
-typedef struct {
-  int percent;
-} FadeFixtureState;
+} FluoroFixtureState;
 
 typedef struct {
   int max_between;
@@ -45,26 +41,31 @@ void* initFireFixture(Fixture* f) {
 
 void fire_switcher(void* f, bool on) {
   Fixture* fixture = (Fixture*)f;
-  ((FireFixtureState*)fixture->state)->phase = on ? WARMUP : COOLDOWN;
+  FireFixtureState* ffs = (FireFixtureState*)fixture->state;
+  ffs->phase = on ? WARMUP : COOLDOWN;
+  if (on && ffs->warmth < 7) {
+    ffs->warmth = 7;
+  } else if (!on) {
+    ffs->warmth /= 2;
+  }
   fixture->on = on;
 }
 
-void* initFluroFixture(Fixture* f) {
-  FluroFixtureState* s = malloc(sizeof(FluroFixtureState));
+void* initFluoroFixture(Fixture* f) {
+  FluoroFixtureState* s = malloc(sizeof(FluoroFixtureState));
   s->frame = 0;
   return (void*)s;
 }
 
-void fluro_switcher(void* f, bool on) {
+void fluoro_switcher(void* f, bool on) {
   Fixture* fixture = (Fixture*)f;
-  ((FluroFixtureState*)fixture->state)->frame = 0;
   fixture->on = on;
-}
-
-void* initFadeFixture(Fixture* f) {
-  FadeFixtureState* s = malloc(sizeof(FadeFixtureState));
-  s->percent = 0;
-  return (void*)s;
+  ((FluoroFixtureState*)fixture->state)->frame = 0;
+  if (!on) {
+    for (int i = 0; i < fixture->n_channels; i++) {
+      control_fade_channel(fixture->channels[i], 0, 50);
+    }
+  }
 }
 
 void* initFlickeringFixture(Fixture* f) {
@@ -132,17 +133,42 @@ static void fire_fixture_task(void* pvParameters) {
   while (true) {
     vTaskDelay(1000 / portTICK_RATE_MS);
     while (state->phase != OUT) {
+      if (state->phase == WARMUP) {
+        state->warmth++;
+        if (state->warmth == 255) {
+          state->phase = STEADY;
+        }
+      } else if (state->phase == COOLDOWN) {
+        state->warmth--;
+        if (state->warmth == 0) {
+          state->phase = OUT;
+        }
+      }
       for (int i = 0; i < f->n_channels; i++) {
         int half_max = state->warmth * f->levels[i] / 255;
         int level = half_max == 0 ? 0 : (esp_random() % half_max + half_max);
         control_fade_channel(f->channels[i], level, 200);
       }
-      if (state->phase == WARMUP) {
-        state->warmth++;
-      } else if (state->phase == COOLDOWN) {
-        state->warmth--;
-      }
       vTaskDelay(200 / portTICK_RATE_MS);
+    }
+  }
+}
+
+static void fluoro_fixture_task(void* pvParameters) {
+  Fixture* f = (Fixture*)pvParameters;
+  FluoroFixtureState* state = (FluoroFixtureState*)f->state;
+  while (true) {
+    vTaskDelay(500 / portTICK_RATE_MS);
+    while (f->on && state->frame <= 60) {
+      for (int i = 0; i < f->n_channels; i++) {
+        bool on = state->frame > 30 ? esp_random() % 10 : esp_random() % 3;
+        if (state->frame > 50 + (8 * i) % 10) {  // Try to stagger final on time
+          on = true;
+        }
+        control_fade_channel(f->channels[i], on ? f->levels[i] : 0, 0);
+      }
+      state->frame++;
+      vTaskDelay(50 / portTICK_RATE_MS);
     }
   }
 }
@@ -158,6 +184,9 @@ static TaskHandle_t initFixtureTask(Fixture* f) {
       break;
     case Fire:
       task = fire_fixture_task;
+      break;
+    case Fluoro:
+      task = fluoro_fixture_task;
       break;
     default:
       task = NULL;
@@ -195,10 +224,9 @@ void off_only_switcher(void* f, bool on) {
 switcher_t getFixtureSwitcher(Fixture* f) {
   switch (f->fixture_type) {
     case Fire:
-      return fire_switcher;  // Temp
-    case Fade:
-      return default_switcher;  // Temp
+      return fire_switcher;
     case Fluoro:
+      return fluoro_switcher;
     case Blinking:
       return off_only_switcher;
     case Flickering:
@@ -229,10 +257,7 @@ void fixturetypes_init_fixture(Fixture* f) {
       state = initFireFixture(f);
       break;
     case Fluoro:
-      state = initFluroFixture(f);
-      break;
-    case Fade:
-      state = initFadeFixture(f);
+      state = initFluoroFixture(f);
       break;
     case Flickering:
       state = initFlickeringFixture(f);

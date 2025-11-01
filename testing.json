@@ -173,22 +173,14 @@
 					]
 				},
 				{
-					"name": "2",
-					"type": "Light",
+					"name": "2+3",
+					"type": "Fluoro",
 					"channels": [
-						18
-					],
-					"levels": [
-						255
-					]
-				},
-				{
-					"name": "3",
-					"type": "Light",
-					"channels": [
+						18,
 						19
 					],
 					"levels": [
+						255,
 						255
 					]
 				},

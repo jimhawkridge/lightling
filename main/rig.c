@@ -23,8 +23,6 @@ FixtureType fixtureTypeFromString(const char* str) {
     return Fire;
   } else if (!strcasecmp("Fluoro", str)) {
     return Fluoro;
-  } else if (!strcasecmp("Fade", str)) {
-    return Fade;
   } else if (!strcasecmp("Flickering", str)) {
     return Flickering;
   } else if (!strcasecmp("Blinking", str)) {
