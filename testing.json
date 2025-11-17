@@ -5,34 +5,34 @@
 			"automator": "AlwaysOn",
 			"fixtures": [
 				{
-					"name": "1+2",
-					"type": "Fire",
-					"channels": [
-						1,
-						2
-					],
-					"levels": [
-						255,
-						100
-					]
-				},
-				{
-					"name": "3",
+					"name": "1",
 					"type": "Light",
 					"channels": [
-						3
+						1
 					],
 					"levels": [
 						255
 					]
 				},
 				{
-					"name": "4",
+					"name": "2",
 					"type": "Light",
 					"channels": [
+						2
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "3+4",
+					"type": "Fire",
+					"channels": [
+						3,
 						4
 					],
 					"levels": [
+						255,
 						255
 					]
 				},

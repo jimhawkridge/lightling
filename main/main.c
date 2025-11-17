@@ -4,10 +4,10 @@
 // #include "esp_err.h"
 // #include "esp_log.h"
 
-#include "automation.h"
 #include "e131.h"
 #include "leds.h"
 #include "rig.h"
+#include "sleep.h"
 #include "tlc5940.h"
 #include "webapp.h"
 #include "wifi.h"
@@ -15,6 +15,8 @@
 // static const char *TAG = "MAIN";
 
 void app_main() {
+  sleep_init();
+
   wifi_init();
   wifi_connect();
   // e131_init();
@@ -22,7 +24,6 @@ void app_main() {
   leds_init();
   tlc_init();
   rig_init();
-  automation_init();
 
   webapp_start();
 }

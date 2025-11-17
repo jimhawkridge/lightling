@@ -5,81 +5,45 @@
 			"automator": "StreetAutomator",
 			"fixtures": [
 				{
-					"name": "Streetlight",
+					"name": "LH streetlight",
+					"type": "Light",
+					"channels": [
+						10
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "RH streetlight",
+					"type": "Light",
+					"channels": [
+						7
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "News stand",
 					"type": "Light",
 					"channels": [
 						8
 					],
 					"levels": [
-						100
+						255
 					]
 				},
 				{
-					"name": "Christmas!",
-					"type": "Light",
+					"name": "Billboard",
+					"type": "Flickering",
 					"channels": [
-						17,
-						23,
-						24,
-						20,
-						21,
-						27,
-						19,
-						22,
-						25,
-						26
+						18,
+						19
 					],
 					"levels": [
-						40,
-						40,
-						40,
-						100,
-						100,
-						100,
-						40,
-						40,
-						40,
-						40
-					]
-				},
-				{
-					"name": "Tree",
-					"type": "Light",
-					"channels": [
-						29,
-						28,
-						30
-					],
-					"levels": [
-						40,
-						100,
-						40
-					]
-				}
-			]
-		},
-		{
-			"name": "Garage",
-			"automator": "OneUpOneDownAutomator",
-			"fixtures": [
-				{
-					"name": "Flat",
-					"type": "Light",
-					"channels": [
-						13
-					],
-					"levels": [
-						100
-					]
-				},
-				{
-					"name": "Workshop",
-					"type": "Light",
-					"channels": [
-						14
-					],
-					"levels": [
-						100
+						255,
+						255
 					]
 				}
 			]
@@ -92,52 +56,42 @@
 					"name": "Bedroom",
 					"type": "Light",
 					"channels": [
-						11
+						44
 					],
 					"levels": [
-						100
+						255
 					]
 				},
 				{
-					"name": "Living Room",
+					"name": "Living room",
 					"type": "Light",
 					"channels": [
-						12
+						43
 					],
 					"levels": [
-						40
+						255
 					]
 				},
 				{
 					"name": "Shop",
 					"type": "Light",
 					"channels": [
-						15
+						45,
+						46
 					],
 					"levels": [
-						100
+						255,
+						255
 					]
 				},
 				{
 					"name": "Lantern",
 					"type": "Light",
 					"channels": [
-						16
+						47
 					],
 					"levels": [
-						50
-					]
-				},
-				{
-					"name": "Tree",
-					"type": "Light",
-					"channels": [
-						31,
-						32
-					],
-					"levels": [
-						50,
-						50
+						150
 					]
 				}
 			]
@@ -150,65 +104,177 @@
 					"name": "Bedroom",
 					"type": "Light",
 					"channels": [
-						7
+						13
 					],
 					"levels": [
-						100
+						255
 					]
 				},
 				{
-					"name": "Living Room",
+					"name": "Hallway",
 					"type": "Light",
 					"channels": [
-						2
+						23
 					],
 					"levels": [
-						100
+						255
 					]
 				},
 				{
 					"name": "Fire",
 					"type": "Fire",
 					"channels": [
-						5,
-						6
+						14,
+						15
 					],
 					"levels": [
-						100,
-						100
+						255,
+						255
 					]
 				},
 				{
 					"name": "Door",
 					"type": "Light",
 					"channels": [
-						1
+						21,
+						22
 					],
 					"levels": [
+						40,
 						40
 					]
 				}
 			]
 		},
 		{
-			"name": "Café",
-			"automator": "OneUpOneDownAutomator",
+			"name": "Doughnut shop",
+			"automator": "DoughnutShopAutomator",
 			"fixtures": [
 				{
 					"name": "Flat",
 					"type": "Light",
 					"channels": [
-						3
+						25
 					],
 					"levels": [
-						100
+						255
 					]
 				},
 				{
-					"name": "Café",
+					"name": "Shop",
 					"type": "Light",
 					"channels": [
-						4
+						6
+					],
+					"levels": [
+						255
+					]
+				}
+			]
+		},
+		{
+			"name": "Police station",
+			"automator": "PoliceStationAutomator",
+			"fixtures": [
+				{
+					"name": "Antenna",
+					"type": "Blinking",
+					"channels": [
+						1
+					],
+					"levels": [
+						50
+					]
+				},
+				{
+					"name": "Interrogation room",
+					"type": "Fluoro",
+					"channels": [
+						31
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "Loo",
+					"type": "Fluoro",
+					"channels": [
+						30
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "Landing",
+					"type": "Fluoro",
+					"channels": [
+						29
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "Situation room",
+					"type": "Fluoro",
+					"channels": [
+						24,
+						26
+					],
+					"levels": [
+						255,
+						255
+					]
+				},
+				{
+					"name": "LH desk",
+					"type": "Light",
+					"channels": [
+						28
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "RH desk",
+					"type": "Light",
+					"channels": [
+						27
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "Reception",
+					"type": "Fluoro",
+					"channels": [
+						3,
+						5
+					],
+					"levels": [
+						255,
+						255
+					]
+				},
+				{
+					"name": "Cell",
+					"type": "Light",
+					"channels": [
+						2
+					],
+					"levels": [
+						255
+					]
+				},
+				{
+					"name": "Lanterns",
+					"type": "Light",
+					"channels": [
+						11
 					],
 					"levels": [
 						100

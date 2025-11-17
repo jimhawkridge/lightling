@@ -37,14 +37,16 @@ AutomatorType automatorTypeFromString(const char* str) {
     return AlwaysOn;
   } else if (!strcasecmp("AlwaysOff", str)) {
     return AlwaysOff;
-  } else if (!strcasecmp("OneUpOneDownAutomator", str)) {
-    return OneUpOneDownAutomator;
+  } else if (!strcasecmp("DoughnutShopAutomator", str)) {
+    return DoughnutShopAutomator;
   } else if (!strcasecmp("TownhouseAutomator", str)) {
     return TownhouseAutomator;
   } else if (!strcasecmp("StreetAutomator", str)) {
     return StreetAutomator;
   } else if (!strcasecmp("BookshopAutomator", str)) {
     return BookshopAutomator;
+  } else if (!strcasecmp("PoliceStationAutomator", str)) {
+    return PoliceStationAutomator;
   } else {
     return UnknownAutomatorType;
   }

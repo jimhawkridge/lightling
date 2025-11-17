@@ -45,7 +45,7 @@ void leds_init() {
   // int gpios[LED_CHANS] = {32, 33, 25, 26, 27, 14, 12, 13,
   //                         0,  15, 2,  4,  16, 17, 5,  3};
   int gpios[LED_CHANS] = {3,  5,  17, 16, 4,  2,  15, 13,
-                          12, 14, 27, 26, 25, 33, 32, 0};
+                          12, 14, 27, 0,  25, 26, 32, 0};
   for (int i = 0; i < LED_CHANS; i++) {
     bool is_low = i > 7;
     ledc_channel_config_t chan = {

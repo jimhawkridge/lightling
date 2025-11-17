@@ -19,7 +19,7 @@ typedef enum FixtureTypeEnum {
   Blinking,
 } FixtureType;
 
-typedef void (*switcher_t)(void*, bool);
+typedef void (*switcher_t)(void*, bool, bool);
 
 typedef struct {
   FixtureType fixture_type;
@@ -29,7 +29,8 @@ typedef struct {
   uint8_t* channels;
   uint8_t n_levels;
   uint8_t* levels;
-  void* state;
+  void* state;          // Used by the type to track animation state
+  int automator_state;  // Can be used by the automator for whatever purpose
   TaskHandle_t task;
   switcher_t switcher;
 } Fixture;
@@ -38,10 +39,11 @@ typedef enum AutomatorTypeEnum {
   UnknownAutomatorType,
   AlwaysOn,
   AlwaysOff,
-  OneUpOneDownAutomator,
+  DoughnutShopAutomator,
   TownhouseAutomator,
   StreetAutomator,
-  BookshopAutomator
+  BookshopAutomator,
+  PoliceStationAutomator,
 } AutomatorType;
 
 typedef struct {

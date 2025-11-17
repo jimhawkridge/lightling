@@ -5,12 +5,23 @@
 #include <sys/socket.h>
 #include "esp_log.h"
 #include "esp_netif.h"
+#include "esp_sntp.h"
 #include "esp_wifi.h"
 #include "nvs_flash.h"
 
+#include "automation.h"
 #include "wifi_creds.h"
 
 static const char* TAG = "WIFI";
+
+static bool time_syncd = false;
+static void time_sync_notification_cb(struct timeval* tv) {
+  ESP_LOGI(TAG, "Time syncd. Already?: %d", time_syncd);
+  if (!time_syncd) {
+    automation_init();
+  }
+  time_syncd = true;
+}
 
 static void wifi_event_handler(void* arg,
                                esp_event_base_t event_base,
@@ -21,6 +32,12 @@ static void wifi_event_handler(void* arg,
     esp_wifi_connect();
   } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
     ESP_LOGI(TAG, "Connected to WiFi");
+
+    // Setup time sync
+    esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    esp_sntp_setservername(0, "pool.ntp.org");
+    sntp_set_time_sync_notification_cb(time_sync_notification_cb);
+    esp_sntp_init();
   }
 }
 

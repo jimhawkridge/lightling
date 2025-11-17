@@ -39,7 +39,7 @@ void* initFireFixture(Fixture* f) {
   return (void*)s;
 }
 
-void fire_switcher(void* f, bool on) {
+void fire_switcher(void* f, bool on, bool fast) {
   Fixture* fixture = (Fixture*)f;
   FireFixtureState* ffs = (FireFixtureState*)fixture->state;
   ffs->phase = on ? WARMUP : COOLDOWN;
@@ -49,6 +49,13 @@ void fire_switcher(void* f, bool on) {
     ffs->warmth /= 2;
   }
   fixture->on = on;
+
+  if (fast) {
+    ffs->phase = OUT;
+    for (int i = 0; i < fixture->n_channels; i++) {
+      control_fade_channel(fixture->channels[i], 0, 50);
+    }
+  }
 }
 
 void* initFluoroFixture(Fixture* f) {
@@ -57,7 +64,7 @@ void* initFluoroFixture(Fixture* f) {
   return (void*)s;
 }
 
-void fluoro_switcher(void* f, bool on) {
+void fluoro_switcher(void* f, bool on, bool fast) {
   Fixture* fixture = (Fixture*)f;
   fixture->on = on;
   ((FluoroFixtureState*)fixture->state)->frame = 0;
@@ -116,13 +123,15 @@ static void flickering_fixture_task(void* pvParameters) {
     }
     int wait = esp_random() % state->max_between;
     vTaskDelay(wait / portTICK_RATE_MS);
-    int chan = esp_random() % f->n_channels;
-    int flicks = (esp_random() % state->max_flicks) + 1;
-    for (int i = 0; i < flicks; i++) {
-      control_fade_channel(f->channels[chan], f->levels[chan] / 2, 0);
-      vTaskDelay(50 / portTICK_RATE_MS);
-      control_fade_channel(f->channels[chan], f->levels[chan], 0);
-      vTaskDelay(50 / portTICK_RATE_MS);
+    if (f->on) {
+      int chan = esp_random() % f->n_channels;
+      int flicks = (esp_random() % state->max_flicks) + 1;
+      for (int i = 0; i < flicks; i++) {
+        control_fade_channel(f->channels[chan], f->levels[chan] / 2, 0);
+        vTaskDelay(50 / portTICK_RATE_MS);
+        control_fade_channel(f->channels[chan], f->levels[chan], 0);
+        vTaskDelay(50 / portTICK_RATE_MS);
+      }
     }
   }
 }
@@ -199,7 +208,7 @@ static TaskHandle_t initFixtureTask(Fixture* f) {
   return hnd;
 }
 
-void default_switcher(void* f, bool on) {
+void default_switcher(void* f, bool on, bool fast) {
   Fixture* fixture = (Fixture*)f;
   for (int i = 0; i < fixture->n_channels; i++) {
     uint8_t brightness = on ? fixture->levels[i] : 0;
@@ -210,7 +219,7 @@ void default_switcher(void* f, bool on) {
 
 // Switches everything off, when it's off time. But leaves it to the task to
 // deal with on.
-void off_only_switcher(void* f, bool on) {
+void off_only_switcher(void* f, bool on, bool fast) {
   Fixture* fixture = (Fixture*)f;
   if (!on) {
     for (int i = 0; i < fixture->n_channels; i++) {
@@ -236,7 +245,11 @@ switcher_t getFixtureSwitcher(Fixture* f) {
 }
 
 void fixture_switch(Fixture* f, bool on) {
-  f->switcher(f, on);
+  f->switcher(f, on, false);
+}
+
+void fixture_switch_off_fast(Fixture* f) {
+  f->switcher(f, false, true);
 }
 
 void fixture_switch_ids(uint8_t group_id, uint8_t fixture_id, bool on) {
