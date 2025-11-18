@@ -120,6 +120,10 @@ static void flickering_fixture_task(void* pvParameters) {
       for (int i = 0; i < f->n_channels; i++) {
         control_fade_channel(f->channels[i], f->levels[i], 0);
       }
+    } else if (!f->on) {
+      for (int i = 0; i < f->n_channels; i++) {
+        control_fade_channel(f->channels[i], 0, 0);
+      }
     }
     int wait = esp_random() % state->max_between;
     vTaskDelay(wait / portTICK_RATE_MS);
@@ -178,6 +182,11 @@ static void fluoro_fixture_task(void* pvParameters) {
       }
       state->frame++;
       vTaskDelay(50 / portTICK_RATE_MS);
+    }
+    if (!f->on) {
+      for (int i = 0; i < f->n_channels; i++) {
+        control_fade_channel(f->channels[i], 0, 0);
+      }
     }
   }
 }

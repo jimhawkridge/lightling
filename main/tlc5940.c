@@ -25,6 +25,9 @@ TaskHandle_t tlc_spi_task_handle;
 uint16_t frame[TLC_CHANS];
 
 void tlc_fade_channel(int channel, uint8_t brightness) {
+  if (frame[channel] == brightness * 4) {
+    return;
+  }
   frame[channel] = brightness * 4;
   xTaskNotifyGive(tlc_spi_task_handle);
 }
@@ -35,7 +38,7 @@ bool tx_cb(rmt_channel_handle_t tx_chan,
   ESP_ERROR_CHECK(gpio_set_level(BLANK, 1));
   ets_delay_us(5);
   ESP_ERROR_CHECK(gpio_set_level(BLANK, 0));
-  // xTaskNotifyFromISR(tlc_gsclk_task_handle, 0, eNoAction, NULL);
+
   xTaskNotifyGive(tlc_gsclk_task_handle);
   return false;
 };
