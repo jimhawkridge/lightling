@@ -67,6 +67,13 @@ static void sleep_task(void* pvParameter) {
         for (int i = 0; i < rig->n_groups; i++) {
           FixtureGroup* group = rig->groups[i];
           group->manual = false;
+          // Give a little feedback to the "user"
+          for (int j = 0; j < group->n_fixtures; j++) {
+            Fixture* fixture = group->fixtures[j];
+            if (fixture->fixture_type == Blinking) {
+              fixture_switch(fixture, true);
+            }
+          }
         }
       }
       vTaskDelay(3000 / portTICK_RATE_MS);
